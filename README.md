@@ -1,32 +1,34 @@
 # Taller de Programaciones Didácticas
 
-Herramienta guiada para redactar programaciones didácticas LOMLOE de ESO y
-Bachillerato conforme a la normativa de la Comunidad de Madrid, según el
-índice obligatorio del Colegio Asunción Cuestablanca.
+Redacta programaciones didácticas LOMLOE de ESO y Bachillerato (Comunidad de
+Madrid) apartado por apartado, en vez de en blanco.
 
-Es una página web autocontenida (`index.html`, sin backend): guía por
-apartado con la normativa y los errores típicos de Inspección, banco
-curricular oficial de las materias de ESO y Bachillerato (competencias
-específicas, criterios de evaluación y saberes básicos, extraídos de la capa
-de texto de los decretos del BOCM), editores estructurados, formularios que
-redactan por sí solos los apartados de evaluación/metodología/atención a la
-diversidad/etc., panel de revisión con comprobaciones automáticas tipo
-Inspección, y exportación a `.html` (para abrir con Word) y `.json` (copia de
-trabajo).
+**[▶ Abrir el Taller](https://utopikamente.github.io/taller-programaciones/)**
+— funciona en el navegador, no requiere instalar nada ni tener cuenta.
+
+## Qué hace
+
+- Guía cada uno de los 17 apartados obligatorios con la normativa y los
+  fallos típicos que señala Inspección Educativa.
+- Trae ya cargadas las competencias específicas, criterios de evaluación y
+  saberes básicos de cada materia y curso, tal como los publica el BOCM.
+- Convierte casillas marcadas en la redacción final de evaluación,
+  metodología, atención a la diversidad y el resto de apartados formularios.
+- Avisa en un panel aparte de qué requisitos de Inspección faltan por cubrir.
+- Exporta el resultado a `.html` (se abre con Word) o a `.json` (para
+  guardar el trabajo y seguir otro día).
 
 ## Cómo usarlo
 
-Abre `index.html` en un navegador (funciona en local, sin instalar nada ni
-necesitar conexión salvo para la redacción opcional con IA).
+Solo hace falta un navegador: abre el enlace de arriba, o descarga
+`index.html` de este repositorio y ábrelo directamente. No hay instalación,
+ni servidor, ni conexión a internet salvo si usas la redacción con IA.
 
-También existe como [Artifact de Claude](https://claude.ai/artifact/TVYHyXAtpUqjdcQvHjXrYZ)
-para compartir con un enlace y usar la redacción asistida por IA integrada.
+También existe como [Artifact de Claude](https://claude.ai/artifact/TVYHyXAtpUqjdcQvHjXrYZ),
+con esa redacción con IA integrada.
 
 ## Proyecto relacionado
 
-[Adaptadocs](https://github.com/Utopikamente/adaptadocs) adapta materiales y
-genera adaptaciones curriculares (ACIS) para alumnado con necesidades
-específicas de apoyo educativo. Es una herramienta distinta y con un
-propósito distinto —adaptación individual frente a programación de
-departamento—, pero ambas comparten el mismo banco curricular oficial como
-fuente de datos.
+[Adaptadocs](https://github.com/Utopikamente/adaptadocs) adapta materiales
+para un alumno concreto con necesidades específicas, en vez de programar
+todo un curso. Comparte con este Taller el mismo banco curricular oficial.
