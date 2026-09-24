@@ -503,8 +503,9 @@ var SEC=[
   insp:["Una materia o ámbito solo puede tener <strong>una</strong> programación, aunque la impartan varios profesores: los acuerdos deben consensuarse."],
   modelo:function(s){
    var pdc=/\(PDC\)/.test(s.meta.materia||"");
-   if(pdc)return "Este ámbito del programa de diversificación curricular lo imparte un único profesor, de alguna de las especialidades con atribución docente en las materias integradas en el ámbito (art. 6 de la Orden 190/2023); su asignación corresponde al director del centro, a propuesta de la jefatura de estudios.\n\nProfesor/a que imparte "+(s.meta.materia||"este ámbito")+" en "+(s.meta.curso||"este curso")+": "+(s.meta.profesor||"…")+".\n\nLa concreción del currículo del ámbito en el centro la elabora el departamento de orientación en colaboración con las jefaturas de los departamentos de coordinación didáctica cuyas materias están integradas en el ámbito, a partir de las directrices generales del centro y con la coordinación de la jefatura de estudios (art. 7 de la Orden 190/2023).\n\nContextualización: esta programación se vincula con el Proyecto Educativo del centro, con el lema del curso «Atrévete a ser Luz» y con el objetivo de la PGA relativo a [objetivo].";
-   return "El departamento de "+(s.meta.departamento||"…")+" del "+s.meta.centro+" está integrado por los siguientes profesores: [nombres].\n\nProfesor/a que imparte "+(s.meta.materia||"esta materia")+" en "+(s.meta.curso||"este curso")+": "+(s.meta.profesor||"…")+".\n\nMaterias y ámbitos asignados al departamento: [relación].\n\nAcuerdos comunes del departamento:\n· Metodológicos: [enfoque competencial, metodologías activas, rutinas de pensamiento…].\n· De evaluación y calificación: instrumentos comunes, criterios de redondeo, tratamiento de la copia y de la no presentación, conservación de instrumentos.\n· Contenidos transversales y Plan Lector.\n· Actividades complementarias y extraescolares.\n\nContextualización: esta programación se vincula con el Proyecto Educativo del centro, con el lema del curso «Atrévete a ser Luz» y con el objetivo de la PGA relativo a [objetivo].";}
+   var lema=s.meta.lema||"[lema del centro]";
+   if(pdc)return "Este ámbito del programa de diversificación curricular lo imparte un único profesor, de alguna de las especialidades con atribución docente en las materias integradas en el ámbito (art. 6 de la Orden 190/2023); su asignación corresponde al director del centro, a propuesta de la jefatura de estudios.\n\nProfesor/a que imparte "+(s.meta.materia||"este ámbito")+" en "+(s.meta.curso||"este curso")+": "+(s.meta.profesor||"…")+".\n\nLa concreción del currículo del ámbito en el centro la elabora el departamento de orientación en colaboración con las jefaturas de los departamentos de coordinación didáctica cuyas materias están integradas en el ámbito, a partir de las directrices generales del centro y con la coordinación de la jefatura de estudios (art. 7 de la Orden 190/2023).\n\nContextualización: esta programación se vincula con el Proyecto Educativo del centro, con el lema del curso «"+lema+"» y con el objetivo de la PGA relativo a [objetivo].";
+   return "El departamento de "+(s.meta.departamento||"…")+" del "+s.meta.centro+" está integrado por los siguientes profesores: [nombres].\n\nProfesor/a que imparte "+(s.meta.materia||"esta materia")+" en "+(s.meta.curso||"este curso")+": "+(s.meta.profesor||"…")+".\n\nMaterias y ámbitos asignados al departamento: [relación].\n\nAcuerdos comunes del departamento:\n· Metodológicos: [enfoque competencial, metodologías activas, rutinas de pensamiento…].\n· De evaluación y calificación: instrumentos comunes, criterios de redondeo, tratamiento de la copia y de la no presentación, conservación de instrumentos.\n· Contenidos transversales y Plan Lector.\n· Actividades complementarias y extraescolares.\n\nContextualización: esta programación se vincula con el Proyecto Educativo del centro, con el lema del curso «"+lema+"» y con el objetivo de la PGA relativo a [objetivo].";}
  },
  {id:"s3",t:"Objetivos generales de etapa y perfil de salida",tipo:"objetivos",
   norm:["Recoge los <strong>objetivos de la etapa</strong> (según el RD y el Decreto correspondientes) y explica cómo contribuye tu materia a alcanzarlos.",
@@ -641,7 +642,7 @@ var FDEF={
      P.push("Este ámbito del programa de diversificación curricular lo imparte un único profesor, de alguna de las especialidades con atribución docente en las materias integradas en el ámbito (art. 6 de la Orden 190/2023); su asignación corresponde al director del centro, a propuesta de la jefatura de estudios.");
      P.push("Profesor/a que imparte "+(S.meta.materia||"este ámbito")+" en "+(S.meta.curso||"este curso")+": "+(S.meta.profesor||"…")+".");
      P.push("La concreción del currículo del ámbito en el centro la elabora el departamento de orientación en colaboración con las jefaturas de los departamentos de coordinación didáctica cuyas materias están integradas en el ámbito, a partir de las directrices generales del centro y con la coordinación de la jefatura de estudios (art. 7 de la Orden 190/2023).");
-     P.push("Esta programación se vincula con el Proyecto Educativo del centro, con el lema del curso «Atrévete a ser Luz»"+(F.pga?" y con el objetivo de la PGA relativo a "+F.pga:"")+".");
+     P.push("Esta programación se vincula con el Proyecto Educativo del centro"+(S.meta.lema?", con el lema del curso «"+S.meta.lema+"»":"")+(F.pga?" y con el objetivo de la PGA relativo a "+F.pga:"")+".");
      return P.join("\n\n");
    }
    var pr=lineList(F.profesores);
@@ -650,7 +651,7 @@ var FDEF={
    if(F.materias)P.push("Materias y ámbitos asignados al departamento: "+F.materias+".");
    var ac=fPick(F,FDEF.s2.groups[1].rows);
    if(ac.length)P.push("Acuerdos comunes del departamento:\n"+ac.map(function(x){return "· "+x+"."}).join("\n"));
-   P.push("Esta programación se vincula con el Proyecto Educativo del centro, con el lema del curso «Atrévete a ser Luz»"+(F.pga?" y con el objetivo de la PGA relativo a "+F.pga:"")+".");
+   P.push("Esta programación se vincula con el Proyecto Educativo del centro"+(S.meta.lema?", con el lema del curso «"+S.meta.lema+"»":"")+(F.pga?" y con el objetivo de la PGA relativo a "+F.pga:"")+".");
    return P.join("\n\n");}
  },
  s9:{groups:[
@@ -871,7 +872,7 @@ function evalFormDefault(){return {
   absProtocolo:true, promoIncluir:true
 };}
 function blank(){
-  var st={meta:{centro:"Colegio Asunción Cuestablanca",codigo:"28010436",etapa:"eso",materia:"",curso:"",departamento:"",profesor:"",cursoEsc:"2026-2027"},sec:{},ce:[],unidades:[],
+  var st={meta:{centro:"Colegio Asunción Cuestablanca",codigo:"28010436",lema:"Atrévete a ser Luz",etapa:"eso",materia:"",curso:"",departamento:"",profesor:"",cursoEsc:"2026-2027"},sec:{},ce:[],unidades:[],
     eval:{instrumentos:[],calificacion:"",promocion:"",recuperacion:"",absentismo:"",form:evalFormDefault()},pend:{texto:"",convocatorias:[]},s7notas:"",forms:{}};
   SEC.forEach(function(x){st.sec[x.id]=""});
   return st;
@@ -1340,7 +1341,7 @@ async function runIA(key,btn){
 }
 
 /* ---------------- aside ---------------- */
-var METAF=[["materia","Materia","text"],["curso","Curso","text"],["etapa","Etapa","sel"],["departamento","Departamento","text"],["profesor","Profesor/a","text"],["cursoEsc","Curso escolar","text"]];
+var METAF=[["centro","Centro educativo","text"],["codigo","Código de centro","text"],["lema","Lema o línea del Proyecto Educativo (opcional)","text"],["materia","Materia","text"],["curso","Curso","text"],["etapa","Etapa","sel"],["departamento","Departamento","text"],["profesor","Profesor/a","text"],["cursoEsc","Curso escolar","text"]];
 function renderMeta(){
   var f=$("#metaform");f.innerHTML="";
   METAF.forEach(function(m){
@@ -1368,9 +1369,10 @@ function renderMeta(){
 }
 function renderFname(){
   var m=S.meta;var suf=m.etapa==="bachillerato"?"BACH":m.etapa==="primaria"?"PRIM":"SEC";
+  var centroSlug=(m.centro||"Centro").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"");
   var mat=(m.materia||"Materia").replace(/\s+/g,"");
   var cur2=(m.curso||"Curso").replace(/[\s.]+/g,"").replace(/º/g,"º");
-  $("#fname").textContent=m.codigo+"_ASUNCIONCUESTABLANCA_"+mat+"_"+cur2+suf;
+  $("#fname").textContent=(m.codigo||"CENTRO")+"_"+centroSlug+"_"+mat+"_"+cur2+suf;
 }
 
 /* ---------------- checks ---------------- */

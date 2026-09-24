@@ -17,6 +17,9 @@ Madrid) apartado por apartado, en vez de en blanco.
 - Avisa en un panel aparte de qué requisitos de Inspección faltan por cubrir.
 - Exporta el resultado a `.html` (se abre con Word) o a `.json` (para
   guardar el trabajo y seguir otro día).
+- El nombre del centro, su código y el lema del Proyecto Educativo son datos
+  editables (panel «Datos de cabecera»), no vienen fijos en el código: cada
+  centro pone los suyos.
 
 ## Cómo usarlo
 
