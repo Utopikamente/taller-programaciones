@@ -257,6 +257,7 @@ dialog::backdrop{background:rgba(20,18,14,.5)}
   <aside class="aside">
     <h3>Datos de cabecera</h3>
     <div class="metaform" id="metaform"></div>
+    <button class="btn primary" id="genBorrador" style="width:100%;margin-bottom:22px">Generar borrador completo ▸</button>
 
     <h3>Nombre del archivo</h3>
     <div class="fname" id="fname">—</div>
@@ -361,6 +362,44 @@ function cargarBancoSaberes(){
   S.unidades=cu.saberes.map(function(b,ix){return {n:ix+1,titulo:"Bloque "+b.b+". "+b.t,tri:"",saberes:b.items.map(function(it){return (it.charAt(0)==="·"?"":"· ")+it}).join("\n"),ce:[]}});
   save();renderMain();renderNav();
   toast("Saberes cargados: "+cu.saberes.length+" bloques");
+}
+
+/* ---------------- generación automática del borrador ---------------- */
+// Casillas por defecto para los apartados cuyo texto no depende de datos que
+// solo conoce el centro (nombres, pesos de evaluación, actividades reales...).
+// Se aplican solo a lo que el docente no haya marcado ya a mano.
+var AUTO_DEFAULTS={
+  s9:{abp:true,indag:true,rutinas:true,coop:true,aussubel:true,aInd:true,aPar:true,aPeq:true,aGran:true,eAula:true,eVir:true,recursos:"libro de texto o material del departamento, dispositivo del alumnado, pizarra digital y plataforma del centro"},
+  s10:{evIni:true,refAmp:true,flex:true,adapt:true,agrup:true,banco:true,refPos:true,tdah:true,orient:true},
+  s11:{evaluable:true,escrita:true,oral:true,recom:true},
+  s14:{trim:true,memoria:true,cambios:true,indic:true,escala:"1 a 4"},
+  s15:{plataforma:true,platNombre:"Raíces",boletines:true,entrevistas:true,tutoria:true,criterios:true},
+  s16:{dosInstr:true,seguimiento:true,mediaConv:true,convFinal:true,sigueCurso:true,noPresenta:true},
+  s17:{plat:true,platN:"Aula Virtual",saberes:true,pruebas:true,criterios:true,aviso:true}
+};
+function generarBorrador(){
+  if(!S.meta.materia||!S.meta.curso){toast("Rellena materia y curso antes de generar");return}
+  var e=bancoKey();
+  if(!e){toast("Esa materia no está en el banco: cárgala y edítala a mano en los apartados 5 y 6");return}
+  cargarBancoCE();
+  cargarBancoSaberes();
+  var n=S.unidades.length;
+  if(n){
+    var porTri=Math.ceil(n/3);
+    S.unidades.forEach(function(u,i){u.tri=String(Math.min(3,Math.floor(i/porTri)+1))});
+  }
+  S.sec.s1=SEC[0].modelo(S);
+  if(e.M.intro)S.sec.s4=e.M.intro;
+  ["s2","s9","s10","s11","s12","s13","s14","s15","s17"].forEach(function(id){
+    var F=fGet(id),def=AUTO_DEFAULTS[id]||{};
+    for(var k in def)if(!(k in F))F[k]=def[k];
+    S.sec[id]=FDEF[id].gen(F);
+  });
+  var F16=fGet("s16");
+  for(var k16 in AUTO_DEFAULTS.s16)if(!(k16 in F16))F16[k16]=AUTO_DEFAULTS.s16[k16];
+  S.pend.texto=FDEF.s16.gen(F16);
+  save();cur="s1";renderMeta();renderAll();
+  toast("Borrador generado. Revisa lo resaltado en amarillo: departamento (2), evaluación (8), actividades (13) y convocatorias de pendientes (16).");
 }
 
 /* ---------------- clausulas literales ---------------- */
@@ -1383,6 +1422,9 @@ function renderChecks(){
 }
 
 /* ---------------- documento ---------------- */
+function hilite(t){return '<span style="background:#fff176;color:#111">'+t+'</span>'}
+function hilitePlaceholders(html){return html.replace(/\[[^\]<>]+\]/g,function(m){return hilite(m)})}
+function hilitePct(html){return html.replace(/\d+(?:,\d+)?\s?%/g,function(m){return hilite(m)})}
 function buildDoc(){
   var m=S.meta;var out=[];
   var idx=SEC.map(function(x,i){return (i+1)+". "+x.t.toUpperCase()});
@@ -1397,7 +1439,7 @@ function buildDoc(){
       out.push('<p><strong>Competencias clave del Perfil de salida:</strong> '+CCLAVE.map(function(c){return c[0]+" ("+esc(c[1])+")"}).join("; ")+'.</p>');
       if(S.sec.s3)out.push('<p>'+esc(S.sec.s3)+'</p>');
     }else if(sec.tipo==="ce"){
-      if(!S.ce.length)out.push('<p>[Pendiente de completar]</p>');
+      if(!S.ce.length)out.push('<p>'+hilite("[Pendiente de completar]")+'</p>');
       out.push('<table><tr><th>Competencia específica</th><th>Competencias clave</th><th>Criterios de evaluación</th></tr>'+S.ce.map(function(c){return '<tr><td><strong>'+esc(c.id)+'.</strong> '+esc(c.texto)+'</td><td>'+esc(c.cc||"")+'</td><td>'+(c.crit||[]).map(function(cr){return "<strong>"+esc(cr.id)+"</strong> "+esc(cr.texto)}).join("<br>")+'</td></tr>'}).join("")+'</table>');
     }else if(sec.tipo==="unidades"){
       out.push('<table><tr><th>Unidad</th><th>Trim.</th><th>Saberes básicos</th><th>Competencias específicas</th></tr>'+S.unidades.map(function(u,k){return '<tr><td>'+(k+1)+'. '+esc(u.titulo)+'</td><td>'+esc(u.tri||"")+'</td><td>'+esc(u.saberes||"")+'</td><td>'+(u.ce||[]).join(", ")+'</td></tr>'}).join("")+'</table>');
@@ -1409,16 +1451,17 @@ function buildDoc(){
       }).join("")+'</table>');
       if(S.s7notas)out.push('<p><strong>Situaciones de aprendizaje.</strong>\n'+esc(S.s7notas)+'</p>');
     }else if(sec.tipo==="evaluacion"){
-      out.push('<table><tr><th>Técnica</th><th>Instrumento de evaluación</th><th>Instrumento de calificación</th><th>%</th></tr>'+S.eval.instrumentos.map(function(x){return '<tr><td>'+esc(x.tec||"")+'</td><td>'+esc(x.nombre||"")+'<br><span style="color:#666">'+esc(x.desc||"")+'</span></td><td>'+esc(x.inscal||"")+'</td><td>'+(x.pct||0)+'</td></tr>'}).join("")+'</table>');
-      if(S.eval.calificacion)out.push('<p><strong>Cálculo de la nota de evaluación y final.</strong>\n'+esc(S.eval.calificacion)+'</p>');
-      if(S.eval.recuperacion)out.push('<p><strong>Recuperación y prueba final / extraordinaria.</strong>\n'+esc(S.eval.recuperacion)+'</p>');
+      var evalHtml='<table><tr><th>Técnica</th><th>Instrumento de evaluación</th><th>Instrumento de calificación</th><th>%</th></tr>'+S.eval.instrumentos.map(function(x){return '<tr><td>'+esc(x.tec||"")+'</td><td>'+esc(x.nombre||"")+'<br><span style="color:#666">'+esc(x.desc||"")+'</span></td><td>'+esc(x.inscal||"")+'</td><td>'+(x.pct||0)+'</td></tr>'}).join("")+'</table>';
+      if(S.eval.calificacion)evalHtml+='<p><strong>Cálculo de la nota de evaluación y final.</strong>\n'+esc(S.eval.calificacion)+'</p>';
+      if(S.eval.recuperacion)evalHtml+='<p><strong>Recuperación y prueba final / extraordinaria.</strong>\n'+esc(S.eval.recuperacion)+'</p>';
+      out.push(hilitePct(evalHtml));
       if(S.eval.absentismo)out.push('<p><strong>Absentismo / procedimientos extraordinarios de evaluación.</strong>\n'+esc(S.eval.absentismo)+'</p>');
       if(S.eval.promocion)out.push('<p><strong>Criterios de promoción.</strong>\n'+esc(S.eval.promocion)+'</p>');
     }else if(sec.tipo==="pendientes"){
       if(S.pend.convocatorias.length)out.push('<table><tr><th>Convocatoria</th><th>Fecha</th><th>% examen</th><th>% trabajo</th></tr>'+S.pend.convocatorias.map(function(c){return '<tr><td>'+esc(c.nombre||"")+'</td><td>'+esc(c.fecha||"")+'</td><td>'+(c.examen||0)+'</td><td>'+(c.trabajo||0)+'</td></tr>'}).join("")+'</table>');
-      out.push('<p>'+esc(S.pend.texto||"[Pendiente de completar]")+'</p>');
+      out.push('<p>'+hilitePlaceholders(esc(S.pend.texto||"[Pendiente de completar]"))+'</p>');
     }else{
-      out.push('<p>'+esc(S.sec[sec.id]||"[Pendiente de completar]")+'</p>');
+      out.push('<p>'+hilitePlaceholders(esc(S.sec[sec.id]||"[Pendiente de completar]"))+'</p>');
     }
   });
   return out.join("\n");
@@ -1475,6 +1518,11 @@ renderAll();
 
 $("#loadExample").onclick=function(){S=ejemplo();save();cur="s1";renderMeta();renderAll();toast("Ejemplo cargado")};
 $("#wipe").onclick=function(){if(confirm("¿Vaciar toda la programación y empezar de cero?")){S=blank();save();cur="s1";renderMeta();renderAll();toast("Programación vaciada")}};
+$("#genBorrador").onclick=function(){
+  var hay=S.ce.length||S.unidades.length||Object.keys(S.sec).some(function(id){return (S.sec[id]||"").trim()});
+  if(hay&&!confirm("Se va a generar un borrador completo con los datos de cabecera actuales, sobrescribiendo el contenido de los apartados 1, 2, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16 y 17. ¿Continuar?"))return;
+  generarBorrador();
+};
 
 // primer arranque: si no hay nada, cargar el ejemplo para que se vea la herramienta trabajando
 (function(){
