@@ -139,6 +139,8 @@ label{font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--ink-soft);
 .guide ul{margin:6px 0;padding-left:18px}
 .guide li{margin:5px 0;font-size:13.5px;color:var(--ink-soft);line-height:1.5}
 .guide li strong{color:var(--ink);font-weight:600}
+.guide .insp-list{padding-left:0;list-style:none}
+.guide .insp-list li{background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:6px;padding:7px 10px;margin:6px 0;color:var(--ink)}
 
 .field{margin-bottom:18px}
 .field .hint{font-size:12px;color:var(--ink-faint);margin:5px 0 0}
@@ -948,7 +950,7 @@ function renderNav(){
 function guideHTML(sec){
   var h='<div class="guide">';
   if(sec.norm){h+='<details open><summary>Qué pide la normativa <span class="tag norm">LOMLOE · BOCM</span></summary><div class="body"><ul>'+sec.norm.map(function(x){return "<li>"+x+"</li>"}).join("")+'</ul></div></details>'}
-  if(sec.insp){h+='<details><summary>Errores que revisa la Inspección <span class="tag insp">Revisión</span></summary><div class="body"><ul>'+sec.insp.map(function(x){return "<li>"+x+"</li>"}).join("")+'</ul></div></details>'}
+  if(sec.insp){h+='<details><summary>Errores que revisa la Inspección <span class="tag insp">Revisión</span></summary><div class="body"><ul class="insp-list">'+sec.insp.map(function(x){return "<li>"+x+"</li>"}).join("")+'</ul></div></details>'}
   return h+'</div>';
 }
 function iaBoxHTML(id){
