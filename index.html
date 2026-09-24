@@ -266,11 +266,14 @@ dialog::backdrop{background:rgba(20,18,14,.5)}
     <div class="score"><span class="big" id="scoreNum">0/0</span><span class="lab">requisitos cubiertos</span></div>
     <div class="checks" id="checks"></div>
 
-    <h3>Fechas clave del curso</h3>
-    <div class="reminder">Entrega en el centro: <strong>6 de octubre</strong>.</div>
-    <div class="reminder">Aprobación del Consejo Escolar (dentro de la PGA): antes del <strong>31 de octubre</strong>.</div>
-    <div class="reminder">Publicación de los criterios de calificación: <strong>1 de noviembre</strong>.</div>
+    <h3>Fechas clave del curso <span style="font-size:10px;text-transform:none;font-weight:400;color:var(--ink-faint)">(editables)</span></h3>
+    <div id="fechasCentro"></div>
     <div class="reminder">Formato: <strong>Calibri 12</strong>, portada e índice del modelo del centro. Cambios posteriores: justificar ante el Consejo Escolar, aprobar por Dirección y volver a subir a Raíces.</div>
+
+    <details style="margin:10px 0 22px">
+      <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.02em">Cláusulas literales del centro ▾</summary>
+      <div id="clausulasCentro" style="margin-top:10px"></div>
+    </details>
 
     <h3 style="margin-top:22px">Documento</h3>
     <div class="exp">
@@ -599,7 +602,7 @@ var SEC=[
   norm:["Indica las vías de información: plataforma del centro (Raíces / Educamos), boletines de notas, entrevistas y reuniones de tutoría.",
    "Los criterios de evaluación y de calificación están <strong>disponibles</strong> para las familias."],
   insp:["Debe constar que los criterios están publicados y son consultables."],
-  modelo:function(s){return "Las familias son informadas del proceso de evaluación, continuo, formativo e integrador, a través de la plataforma del centro, de los boletines informativos de notas de cada trimestre y de entrevistas y reuniones de tutoría.\n\nLos criterios de evaluación y de calificación recogidos en esta programación están disponibles para su consulta por las familias a través de la plataforma del centro y quedan publicados antes del 1 de noviembre.";}
+  modelo:function(s){return "Las familias son informadas del proceso de evaluación, continuo, formativo e integrador, a través de la plataforma del centro, de los boletines informativos de notas de cada trimestre y de entrevistas y reuniones de tutoría.\n\nLos criterios de evaluación y de calificación recogidos en esta programación están disponibles para su consulta por las familias a través de la plataforma del centro y quedan publicados antes del "+(s.meta.fechaPublicacion||"1 de noviembre")+".";}
  },
  {id:"s16",t:"Plan de recuperación de materias pendientes de cursos anteriores",tipo:"pendientes",
   norm:["Debe aparecer en la PD de <strong>cada curso</strong> el plan de recuperación de los cursos anteriores.",
@@ -788,7 +791,7 @@ var FDEF={
    if(F.entrevistas)v.push("entrevistas personales presenciales, telefónicas u online");
    if(F.tutoria)v.push("las reuniones de tutoría");
    P.push("Las familias son informadas del proceso de evaluación, continuo, formativo e integrador, a través de "+(v.length?v.join(", "):"[vías]")+".");
-   if(F.criterios)P.push("Los criterios de evaluación y de calificación recogidos en esta programación están disponibles para su consulta por las familias y quedan publicados antes del 1 de noviembre.");
+   if(F.criterios)P.push("Los criterios de evaluación y de calificación recogidos en esta programación están disponibles para su consulta por las familias y quedan publicados antes del "+(S.meta.fechaPublicacion||"1 de noviembre")+".");
    return P.join("\n\n");}
  },
  s17:{groups:[
@@ -1136,7 +1139,7 @@ function componer8(){
   var P=[];
   var listaIns=ins.filter(function(i){return i.nombre}).map(function(i){return "· "+i.nombre+" — "+(i.pct||0)+" %"+(i.inscal?" ("+i.inscal+")":"")});
   P.push("La calificación de cada evaluación se obtiene aplicando a los instrumentos de evaluación los porcentajes indicados:"+(listaIns.length?"\n"+listaIns.join("\n"):" [define los instrumentos y sus porcentajes en la tabla superior]."));
-  if(f.clReparto)P.push(CL.reparto);
+  if(f.clReparto)P.push(S.meta.claReparto||CL.reparto);
   if(f.obsDiaria)P.push("El «interés» y la «participación» no se utilizan como criterios de calificación por su carácter subjetivo. La observación del trabajo en el aula se recoge de forma sistemática y registrable (fecha, tarea e instrumento: lista de control o escala de estimación).");
   var red=f.redondeo==="truncamiento"?"por truncamiento":"por redondeo";
   var cal="Las calificaciones de cada evaluación y la de la evaluación ordinaria se obtienen "+red+".";
@@ -1150,9 +1153,9 @@ function componer8(){
   else tri+=" Si no se supera ninguna de las tres evaluaciones, la decisión sobre la materia corresponde al equipo docente conforme a la normativa de evaluación.";
   P.push(tri);
   if(f.noMinora)P.push("No se minora la calificación por la presentación en las pruebas objetivas: se califica exclusivamente el contenido propio de la prueba.");
-  if(f.clCopia)P.push(CL.copia);
-  if(f.clNoPresenta)P.push(CL.noPresenta);
-  if(f.clMembrete)P.push(CL.membrete);
+  if(f.clCopia)P.push(S.meta.claCopia||CL.copia);
+  if(f.clNoPresenta)P.push(S.meta.claNoPresenta||CL.noPresenta);
+  if(f.clMembrete)P.push(S.meta.claMembrete||CL.membrete);
   var calificacion=P.join("\n\n");
 
   var R=[];
@@ -1366,6 +1369,27 @@ function renderMeta(){
     el[m[2]==="sel"?"onchange":"oninput"]=function(){S.meta[m[0]]=el.value;save();renderFname();renderChecks();renderNav();if(m[0]==="etapa"&&(cur==="s3"))renderMain()};
   });
   renderFname();
+  renderFechasClausulas();
+}
+var FECHAF=[["fechaEntrega","Entrega en el centro","6 de octubre"],["fechaAprobacion","Aprobación del Consejo Escolar (dentro de la PGA)","31 de octubre"],["fechaPublicacion","Publicación de los criterios de calificación","1 de noviembre"]];
+var CLAUF=[["claNoPresenta","No presentado / abandono de la materia",function(){return CL.noPresenta}],["claCopia","Copia en un examen",function(){return CL.copia}],["claReparto","Reparto si falta un instrumento",function(){return CL.reparto}],["claMembrete","Membrete del examen",function(){return CL.membrete}]];
+function renderFechasClausulas(){
+  var f=$("#fechasCentro");if(f){f.innerHTML="";
+    FECHAF.forEach(function(x){
+      var wrap=document.createElement("div");wrap.className="reminder";
+      wrap.innerHTML='<span>'+x[1]+': </span><input style="display:inline-block;width:140px;padding:3px 6px;font-size:12.5px" id="ff_'+x[0]+'" value="'+esc(S.meta[x[0]]||x[2])+'">';
+      f.appendChild(wrap);
+      $("#ff_"+x[0]).oninput=function(){S.meta[x[0]]=this.value;save()};
+    });
+  }
+  var c=$("#clausulasCentro");if(c){c.innerHTML="";
+    CLAUF.forEach(function(x){
+      var wrap=document.createElement("div");wrap.className="field";wrap.style.marginBottom="10px";
+      wrap.innerHTML='<label>'+x[1]+'</label><textarea id="fc_'+x[0]+'" style="min-height:70px;font-size:12.5px">'+esc(S.meta[x[0]]||x[2]())+'</textarea>';
+      c.appendChild(wrap);
+      $("#fc_"+x[0]).oninput=function(){S.meta[x[0]]=this.value;save()};
+    });
+  }
 }
 function renderFname(){
   var m=S.meta;var suf=m.etapa==="bachillerato"?"BACH":m.etapa==="primaria"?"PRIM":"SEC";
