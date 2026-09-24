@@ -940,6 +940,7 @@ function ejemplo(){
   st.eval.recuperacion="Recuperación de evaluaciones suspensas: durante el trimestre siguiente se entrega un cuadernillo de ejercicios de repaso (10 %) y se realiza una prueba escrita o un proyecto (90 %). La nota de la evaluación recuperada resulta de esos dos instrumentos. En ningún caso se minora una nota ya obtenida ni se recuperan todas las competencias con un único examen.\n\nPrueba final (junio): quien no haya recuperado uno o más trimestres se examina de los contenidos de las evaluaciones pendientes (90 %) y entrega el cuadernillo de repaso (10 %).";
   st.eval.promocion="Promoción (art. 22 del Decreto 65/2022): el alumnado promociona cuando ha superado todas las materias o tiene evaluación negativa en una o dos; con tres o más materias suspensas el equipo docente decide de forma colegiada, de manera excepcional, atendiendo a la naturaleza de las materias, las expectativas de recuperación y el beneficio para su evolución académica. La repetición es excepcional y se acompaña de un plan específico personalizado.";
   st.eval.absentismo="En la ESO no existe pérdida del derecho a la evaluación continua. Ante faltas de asistencia se aplica el protocolo de absentismo (Decreto 32/2019, art. 36): comunicación a la familia y, con un 25 % de faltas injustificadas durante dos meses consecutivos en menores de 16 años, comunicación a la Unidad de Absentismo correspondiente. Al alumnado en esta situación se le evaluará mediante una prueba específica de los contenidos desarrollados durante su ausencia (90 %) y un cuadernillo de ejercicios preparatorios (10 %).";
+  st.eval._etapaGenerada="eso";
   st.pend.texto="Los alumnos de cursos superiores con Biología y Geología de 1.º ESO pendiente recuperarán la materia mediante dos convocatorias, cada una con un trabajo (máximo 10 % de la nota de esa convocatoria) y un examen (máximo 90 %) sobre los bloques indicados. Se realiza un seguimiento quincenal de la preparación.\n\nLa nota final de la materia pendiente es la media aritmética de las calificaciones de las dos convocatorias.\n\n· Si esa media es igual o superior a 5, la materia queda superada.\n· Si esa media es inferior a 5, el alumno se presenta a una convocatoria final (examen 90 % + trabajo 10 %) de la convocatoria o convocatorias no superadas. Si no la supera, mantiene la materia pendiente para el curso siguiente.\n\nSi el alumno no se presenta a un examen sin justificación o abandona el plan, esa convocatoria se califica con un 0. Para el alumnado con 7.ª hora de recuperación: Plan A (asistencia a las sesiones) y Plan B (plan alternativo con los mismos porcentajes) para quienes no puedan asistir; el material se publica en el aula virtual.";
   st.pend.convocatorias=[
    {nombre:"1.ª convocatoria",fecha:"Septiembre",examen:90,trabajo:10},
@@ -1077,6 +1078,9 @@ function relSection(sec){
 }
 function evalSection(sec){
   var e=S.eval;var h=guideHTML(sec);
+  if(e._etapaGenerada&&e._etapaGenerada!==S.meta.etapa){
+    h+='<div class="reminder" style="background:#fff176;border-color:#fff176;border-left-color:#a86913">El texto de este apartado se redactó para <strong>'+esc(e._etapaGenerada)+'</strong> y la etapa actual es <strong>'+esc(S.meta.etapa)+'</strong>: probablemente cite normativa o plazos que no corresponden (p. ej. un artículo de promoción de otra etapa). Vuelve a pulsar «Generar redacción de los 4 bloques» más abajo.</div>';
+  }
   var sum=e.instrumentos.reduce(function(a,i){return a+(+i.pct||0)},0);
   h+='<div class="field"><label>Instrumentos de evaluación y criterios de calificación</label>';
   h+='<div class="pctbar '+(sum===100?"good":"bad")+'"><span>Suma de porcentajes</span><span>'+sum+' %'+(sum===100?"  ✓":"  — debe sumar 100")+'</span></div>';
@@ -1180,6 +1184,7 @@ function componer8(){
   var pisa=campos.some(function(c){var cur=(S.eval[c[0]]||"").trim();return cur&&cur!==c[1].trim()});
   if(pisa&&!confirm("Se va a sobrescribir el texto actual de los cuatro bloques con la redacción generada a partir del formulario. ¿Continuar?"))return;
   campos.forEach(function(c){S.eval[c[0]]=c[1]});
+  S.eval._etapaGenerada=S.meta.etapa;
   save();renderMain();renderNav();toast("Redacción generada desde el formulario");
 }
 function pendSection(sec){
@@ -1425,6 +1430,7 @@ var CHECKS=[
  {id:"abs",sec:"s8",req:1,label:"Trata el absentismo / evaluación extraordinaria (Secundaria)",test:function(){if(S.meta.etapa==="primaria")return true;return norm(S.eval.absentismo+" "+S.eval.calificacion).indexOf("absentismo")>=0}},
  {id:"ext",sec:"s8",req:1,label:"Bachillerato: regula la prueba extraordinaria",test:function(){if(S.meta.etapa!=="bachillerato")return true;return norm(S.eval.recuperacion+" "+S.eval.calificacion).indexOf("extraordinaria")>=0}},
  {id:"membrete",sec:"s8",req:0,label:"Recoge el membrete del examen (tiempo en minutos, no en %)",test:function(){var t=txtAll();return t.indexOf("membrete")>=0||(t.indexOf("puntuacion de cada")>=0)}},
+ {id:"etapaEval",sec:"s8",req:1,label:"El texto de evaluación se generó para la etapa actual (no quedó de un ejemplo u otra etapa)",test:function(){return !S.eval._etapaGenerada||S.eval._etapaGenerada===S.meta.etapa}},
  {id:"lector",sec:"s11",req:1,label:"Plan Lector con actividades concretas",test:function(){return norm(S.sec.s11).length>150}},
  {id:"transv",sec:"s12",req:1,label:"Tratamiento explícito de los cinco ejes transversales",test:function(){var t=norm(S.sec.s12);return t.length>120&&(t.indexOf("sostenible")>=0||t.indexOf("salud")>=0)}},
  {id:"divers",sec:"s10",req:1,label:"Atención a la diversidad: medidas ordinarias y extraordinarias",test:function(){var t=norm(S.sec.s10);return t.indexOf("ordinaria")>=0&&(t.indexOf("extraordinaria")>=0||t.indexOf("significativa")>=0)}},
@@ -1477,6 +1483,9 @@ function buildDoc(){
       }).join("")+'</table>');
       if(S.s7notas)out.push('<p><strong>Situaciones de aprendizaje.</strong>\n'+esc(S.s7notas)+'</p>');
     }else if(sec.tipo==="evaluacion"){
+      if(S.eval._etapaGenerada&&S.eval._etapaGenerada!==m.etapa){
+        out.push('<p>'+hilite("⚠ Este texto se redactó para "+S.eval._etapaGenerada+" y la etapa actual de la programación es "+m.etapa+": revísalo, puede citar normativa de otra etapa.")+'</p>');
+      }
       var evalHtml='<table><tr><th>Técnica</th><th>Instrumento de evaluación</th><th>Instrumento de calificación</th><th>%</th></tr>'+S.eval.instrumentos.map(function(x){return '<tr><td>'+esc(x.tec||"")+'</td><td>'+esc(x.nombre||"")+'<br><span style="color:#666">'+esc(x.desc||"")+'</span></td><td>'+esc(x.inscal||"")+'</td><td>'+(x.pct||0)+'</td></tr>'}).join("")+'</table>';
       if(S.eval.calificacion)evalHtml+='<p><strong>Cálculo de la nota de evaluación y final.</strong>\n'+esc(S.eval.calificacion)+'</p>';
       if(S.eval.recuperacion)evalHtml+='<p><strong>Recuperación y prueba final / extraordinaria.</strong>\n'+esc(S.eval.recuperacion)+'</p>';
