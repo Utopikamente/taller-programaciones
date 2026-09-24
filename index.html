@@ -649,7 +649,7 @@ var FDEF={
      return P.join("\n\n");
    }
    var pr=lineList(F.profesores);
-   P.push("El departamento de "+(S.meta.departamento||"…")+" del "+S.meta.centro+" está integrado por: "+(pr.length?pr.join("; "):"[integrantes]")+".");
+   P.push("El departamento de "+(S.meta.departamento||"…")+" del "+(S.meta.centro||"…")+" está integrado por: "+(pr.length?pr.join("; "):"[integrantes]")+".");
    P.push("Profesor/a que imparte "+(S.meta.materia||"esta materia")+" en "+(S.meta.curso||"este curso")+": "+(S.meta.profesor||"…")+".");
    if(F.materias)P.push("Materias y ámbitos asignados al departamento: "+F.materias+".");
    var ac=fPick(F,FDEF.s2.groups[1].rows);
